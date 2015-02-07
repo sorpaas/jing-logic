@@ -1,3 +1,5 @@
+;;; A naive implementation of Tic Tac Toe, whose core part written in miniKanren
+
 (ns jing-logic.core
   (:refer-clojure :exclude [==])
   (:use [clojure.core.logic]))
@@ -11,7 +13,7 @@
          lb mb rb] board)
     (conde
      [(== pl 0)]
-     [(== pl 1)])
+     [(== pl 1)]) ; Make sure the winners are either player 1 or player 2, but not nil.
     (conde
      [(== [pl pl pl
            lm mm rm
@@ -36,7 +38,9 @@
            lb mb pl] board)]
      [(== [lt mt pl
            lm pl rm
-           pl mb rb] board)])))
+           pl mb rb] board)]))) ; All eight conditions that players might win.
+
+;;; Boring stuff for printing and reading from console.
 
 (defn select [board player]
   (print player "(0-8) > ") (flush)
@@ -49,7 +53,7 @@
 
 (defn println-winner [board]
   (let [winners (run* [x]
-                  (winner x board))]
+                  (winner x board))] ; Run the above logic, to find out whether there is a winner.
     (if (= 0 (count winners))
       (println "No winner yet. ")
       (do
