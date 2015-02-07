@@ -65,8 +65,8 @@
   (println (format "%5s%5s%5s" (get board 3) (get board 4) (get board 5)))
   (println (format "%5s%5s%5s" (get board 6) (get board 7) (get board 8))))
 
+(declare play0)
 (declare play1)
-(declare play2)
 
 (defn play0 [board]
   (newline)
