@@ -11,9 +11,7 @@
     (== [lt mt rt
          lm mm rm
          lb mb rb] board)
-    (conde
-     [(== pl 0)]
-     [(== pl 1)]) ; Make sure the winners are either player 1 or player 2, but not nil.
+    (!= pl nil)
     (conde
      [(== [pl pl pl
            lm mm rm
@@ -42,16 +40,7 @@
 
 ;;; Boring stuff for printing and reading from console.
 
-(defn select [board player]
-  (print player "(0-8) > ") (flush)
-  (let [x (read)]
-    (if (and (number? x) (nil? (get board x)) (>= x 0) (<= x 8))
-      (assoc board x player)
-      (do
-        (println "Not available. Try again!")
-        (select board player)))))
-
-(defn println-winner [board]
+(defn println-winner-or-exit [board]
   (let [winners (run* [x]
                   (winner x board))] ; Run the above logic, to find out whether there is a winner.
     (if (= 0 (count winners))
@@ -61,33 +50,40 @@
         (System/exit 0)))))
 
 (defn println-board [board]
+  (newline)
   (println (format "%5s%5s%5s" (get board 0) (get board 1) (get board 2)))
   (println (format "%5s%5s%5s" (get board 3) (get board 4) (get board 5)))
-  (println (format "%5s%5s%5s" (get board 6) (get board 7) (get board 8))))
+  (println (format "%5s%5s%5s" (get board 6) (get board 7) (get board 8)))
+  (newline))
 
-(declare play0)
-(declare play1)
+(defn select [board player]
+  (print "Player" player "(0-8) > ")
+  (flush)
+  (let [x (read)]
+    (if (and (number? x) (nil? (get board x)) (>= x 0) (<= x 8))
+      (assoc board x player)
+      (do
+        (println "Not available. Try again!")
+        (select board player)))))
 
-(defn play0 [board]
-  (newline)
+(defn play [board players]
+  (cond
+    (= 0 (count players)) board
+    :else (let [nb ((first players) board)]
+            (println-winner-or-exit nb)
+            (play nb (rest players)))))
+
+(defn game [board players]
   (println-board board)
-  (newline)
-  (let [nb (select board 0)]
-    (println-winner nb)
-    (play1 nb)))
-
-(defn play1 [board]
-  (newline)
-  (println-board board)
-  (newline)
-  (let [nb (select board 1)]
-    (println-winner nb)
-    (play0 nb)))
+  (let [nb (play board players)]
+    (game nb players)))
 
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
   (println "A naive implementation of Tic Tac Toe game, by Brendan. ")
-  (play1 [nil nil nil
-          nil nil nil
-          nil nil nil]))
+  (game [nil nil nil
+         nil nil nil
+         nil nil nil]
+        [(fn [board] (select board 0))
+         (fn [board] (select board 1))]))
