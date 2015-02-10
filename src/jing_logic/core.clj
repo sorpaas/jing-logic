@@ -79,7 +79,6 @@
     (game nb players)))
 
 (defn -main
-  "I don't do a whole lot ... yet."
   [& args]
   (println "A naive implementation of Tic Tac Toe game, by Brendan. ")
   (game [nil nil nil
