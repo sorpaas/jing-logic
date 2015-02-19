@@ -2,41 +2,55 @@
 
 (ns jing-logic.core
   (:refer-clojure :exclude [==])
-  (:use [clojure.core.logic]))
+  (:use [clojure.core.logic]
+        [clojure.tools.macro]))
 
-(defn winner [pl board]
-  (fresh [lt mt rt
-          lm mm rm
-          lb mb rb]
-    (== [lt mt rt
-         lm mm rm
-         lb mb rb] board)
-    (!= pl nil)
-    (conde
-     [(== [pl pl pl
-           lm mm rm
-           lb mb rb] board)]
-     [(== [lt mt rt
-           pl pl pl
-           lb mb rb] board)]
-     [(== [lt mt rt
-           lm mm rm
-           pl pl pl] board)]
-     [(== [pl mt rt
-           pl mm rm
-           pl mb rb] board)]
-     [(== [lt pl rt
-           lm pl rm
-           lb pl rb] board)]
-     [(== [lt mt pl
-           lm mm pl
-           lb mb pl] board)]
-     [(== [pl mt rt
-           lm pl rm
-           lb mb pl] board)]
-     [(== [lt mt pl
-           lm pl rm
-           pl mb rb] board)]))) ; All eight conditions that players might win.
+(defsymbolmacro _ (lvar))
+
+(defn winner [p board]
+  (!= p nil)
+  (conde
+   [(== [p p p
+         _ _ _
+         _ _ _] board)]
+   [(== [_ _ _
+         p p p
+         _ _ _] board)]
+   [(== [_ _ _
+         _ _ _
+         p p p] board)]
+   [(== [p _ _
+         p _ _
+         p _ _] board)]
+   [(== [_ p _
+         _ p _
+         _ p _] board)]
+   [(== [_ _ p
+         _ _ p
+         _ _ p] board)]
+   [(== [p _ _
+         _ p _
+         _ _ p] board)]
+   [(== [_ _ p
+         _ p _
+         p _ _] board)])) ; All eight conditions that players might win.
+
+(defn plus [a b c]
+  (conde
+   [(nilo a) (== b c)]
+   [(nilo b) (== a c)]))
+
+(defn surpose [a b c]
+  (conde
+   [(== a []) (== b []) (== c [])]
+   [(!= a []) (!= b []) (!= c [])
+    (fresh [cara carb carc
+            cdra cdrb cdrc]
+      (conso cara cdra a)
+      (conso carb cdrb b)
+      (conso carc cdrc c)
+      (plus cara carb carc)
+      (surpose cdra cdrb cdrc))]))
 
 ;;; Boring stuff for printing and reading from console.
 
